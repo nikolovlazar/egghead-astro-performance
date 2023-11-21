@@ -1,0 +1,73 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<div>
+  <button
+    data-slug={slug}
+    id='like'
+    class='px-3 py-1 rounded-md bg-blue-500 text-white'
+  >
+    Like
+  </button>
+  <p>Likes: <span id='num-likes'>0</span></p>
+</div>
+
+<script>
+  import * as Sentry from '@sentry/astro'
+  const likeButton = document.getElementById('like');
+  const numLikes = document.getElementById('num-likes');
+  const slug = likeButton?.dataset.slug;
+
+  likeButton?.addEventListener('click', () => hitLike());
+
+  function hitLike() {
+    const scope = Sentry.getCurrentHub().getScope();
+    const transaction = Sentry.startTransaction({
+      name: 'POST LIKE',
+      op: 'http.client',
+    });
+    scope?.setSpan(transaction);
+
+    transaction.setTag('post_slug', slug);
+
+    fetch(`/api/likes/${slug}1`, { method: 'post' })
+      .then((res) => {
+        if (!res.ok) { throw new Error('non-200 response') }
+          return res.json()
+        })
+      .then((data) => {
+        if (!!numLikes) {
+          numLikes.innerText = data.likes;
+        }
+      })
+      // .catch((err) => {
+      //   alert("Couldn't like the post");
+      //   throw err;
+      // })
+      .finally(() => {
+        transaction.finish();
+      });
+  }
+
+  function refreshLikes() {
+    fetch(`/api/likes/${slug}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!!numLikes) {
+          numLikes.innerText = data.likes;
+        }
+      })
+      .catch(() => {
+        if (!!numLikes) {
+          numLikes.innerText = '0'
+        }
+      });
+  }
+
+  refreshLikes();
+</script>

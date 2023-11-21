@@ -1,0 +1,95 @@
+---
+import { SEO, type Props as SEOProps } from 'astro-seo';
+
+import Link from '../components/Link.astro';
+
+import '../styles/index.css';
+
+interface Props {
+  seo?: SEOProps;
+  ogImage?: {
+    template: string;
+    data?: Record<string, any>;
+  }
+}
+
+const { seo, ogImage } = Astro.props;
+
+const ogImageUrl = `${Astro.url.origin}/og/${ogImage?.template ?? 'default'}.png?${new URLSearchParams(ogImage?.data)}`;
+---
+
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='description' content='Astro description' />
+    <meta name='viewport' content='width=device-width' />
+    <link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+    <meta name='generator' content={Astro.generator} />
+    <link rel='sitemap' href='/sitemap-index.xml' />
+    <SEO
+      {...seo}
+      title={seo?.title ?? 'Lazar Nikolov'}
+      description={seo?.description ?? "Lazar Nikolov's personal blog site"}
+      openGraph={{
+        basic: {
+          type: 'website',
+          title: seo?.title ?? "Lazar Nikolov's personal blog site",
+          image: ogImageUrl,
+          url: seo?.canonical,
+        },
+      }}
+      twitter={{
+        card: 'summary_large_image',
+        image: ogImageUrl,
+      }}
+    />
+  </head>
+  <body class='w-full max-w-3xl mx-auto min-h-screen flex flex-col'>
+    <div class='flex justify-between items-center py-4'>
+      <header>
+        <a href='/' class='font-bold text-2xl hover:text-blue-500'
+          >Egghead ❤️ Astro</a
+        >
+      </header>
+      <nav>
+        <ul class='flex gap-4'>
+          <li><Link href='/'>Home</Link></li>
+          <li><Link href='/about'>About</Link></li>
+          <li><Link href='/blog/1'>Blog</Link></li>
+          <li><Link href='/feed.xml'>RSS</Link></li>
+          <li>
+            <Link href='https://github.com/nikolovlazar' isExternal>
+              GitHub
+            </Link>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <main class='flex-1'>
+      <slot />
+    </main>
+    <footer class='w-full mx-auto text-center py-4'>
+      <span>© {new Date().getFullYear()} Lazar Nikolov.</span>
+    </footer>
+    <style is:global>
+      :root {
+        --accent: 124, 58, 237;
+        --accent-gradient: linear-gradient(
+          45deg,
+          rgb(var(--accent)),
+          #da62c4 30%,
+          white 60%
+        );
+      }
+      html {
+        font-family: system-ui, sans-serif;
+        background-color: #f6f6f6;
+      }
+      code {
+        font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
+          DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
+      }
+    </style>
+  </body>
+</html>
